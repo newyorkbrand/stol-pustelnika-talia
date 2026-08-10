@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Stół Pustelnika — Talia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c0b0a; --fg: #f0ebe3; --muted: #a89f92; --accent: #d4c4a8; --candle: #c9a66b;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --card-w: min(78vw, 320px); --card-h: calc(var(--card-w) * 1.5); --n: 6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+    body {
+      background: radial-gradient(ellipse 70% 50% at 50% 40%, color-mix(in oklab, var(--candle) 9%, transparent), transparent 65%), var(--bg);
+      color: var(--fg); font-family: "Source Sans 3", system-ui, sans-serif;
+      min-height: calc(100vh * var(--n)); min-height: calc(100dvh * var(--n));
+    }
+    .scroll-marker { height: 100vh; height: 100dvh; scroll-snap-align: start; scroll-snap-stop: always; }
+    .stage {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh;
+      display: grid; place-items: center; pointer-events: none;
+      perspective: 1400px; perspective-origin: 50% 45%; z-index: 5;
+    }
+    .deck { position: relative; width: var(--card-w); height: var(--card-h); transform-style: preserve-3d; }
+    .card { position: absolute; inset: 0; transform-style: preserve-3d; border-radius: 14px; will-change: transform, opacity, filter; }
+    .card-shell {
+      position: absolute; inset: 0; border-radius: 14px; overflow: hidden; background: #141210;
+      box-shadow: 0 28px 60px -18px rgb(0 0 0 / 0.65), 0 0 0 1px color-mix(in oklab, var(--fg) 10%, transparent), inset 0 0 0 1px color-mix(in oklab, var(--accent) 14%, transparent);
+      transform-style: preserve-3d;
+    }
+    .layer { position: absolute; inset: 0; border-radius: inherit; transform-style: preserve-3d; pointer-events: none; }
+    .layer-art { overflow: hidden; }
+    .layer-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card[data-index="0"] .layer-art { background: radial-gradient(ellipse at 40% 35%, #c9a66b55, transparent 45%), linear-gradient(165deg, #1a1814, #0a0908); }
+    .card[data-index="1"] .layer-art { background: radial-gradient(ellipse at 50% 30%, #3a4a7a88, transparent 50%), linear-gradient(165deg, #0e1520, #06080c); }
+    .card[data-index="2"] .layer-art { background: radial-gradient(ellipse at 70% 25%, #d4c4a866, transparent 40%), linear-gradient(165deg, #0a1020, #05060a); }
+    .card[data-index="3"] .layer-art { background: radial-gradient(ellipse at 50% 45%, #c9a66b33, transparent 40%), linear-gradient(165deg, #0c1018, #050608); }
+    .card[data-index="4"] .layer-art { background: radial-gradient(ellipse at 50% 40%, #d4c4a844, transparent 45%), linear-gradient(165deg, #12100c, #080706); }
+    .card[data-index="5"] .layer-art { background: radial-gradient(ellipse at 70% 30%, #c9a66b66, transparent 35%), linear-gradient(165deg, #1a1208, #0a0704); }
+    .layer-vignette { background: linear-gradient(180deg, rgb(0 0 0 / 0.15) 0%, transparent 28%, transparent 55%, rgb(0 0 0 / 0.75) 100%); transform: translateZ(8px); }
+    .layer-frame { inset: 10px; width: auto; height: auto; border-radius: 8px; box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--accent) 28%, transparent); transform: translateZ(16px); }
+    .layer-copy { display: flex; flex-direction: column; justify-content: flex-end; padding: 1.35rem 1.25rem 1.5rem; transform: translateZ(28px); }
+    .card.has-cta .layer-copy { padding-bottom: 4.75rem; }
+    .layer-copy .roman { font-family: "Cormorant Garamond", Georgia, serif; font-size: 0.7rem; letter-spacing: 0.28em; color: var(--accent); text-transform: uppercase; margin-bottom: 0.35rem; text-shadow: 0 2px 10px rgb(0 0 0 / 0.6); }
+    .layer-copy h2 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: clamp(1.55rem, 5.5vw, 1.9rem); line-height: 1.1; letter-spacing: -0.02em; text-shadow: 0 2px 14px rgb(0 0 0 / 0.7); }
+    .layer-copy p { margin-top: 0.45rem; font-size: 0.82rem; line-height: 1.45; color: color-mix(in oklab, var(--fg) 88%, transparent); max-width: 28ch; text-shadow: 0 1px 8px rgb(0 0 0 / 0.65); }
+    .layer-glint { background: linear-gradient(125deg, transparent 35%, color-mix(in oklab, var(--accent) 8%, transparent) 48%, transparent 62%); mix-blend-mode: screen; opacity: 0.35; transform: translateZ(36px); }
+    .brand-top { position: fixed; top: max(1rem, env(safe-area-inset-top)); left: 0; right: 0; z-index: 20; text-align: center; pointer-events: none; transition: opacity 0.35s var(--ease); }
+    .brand-top .kicker { font-size: 0.65rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); font-weight: 500; }
+    .brand-top .name { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.05rem; font-weight: 500; margin-top: 0.15rem; opacity: 0.9; }
+    .rail { position: fixed; right: max(0.5rem, env(safe-area-inset-right)); top: 50%; transform: translateY(-50%); z-index: 30; display: flex; flex-direction: column; gap: 0.2rem; }
+    .rail button { width: 40px; height: 18px; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; }
+    .rail button::after { content: ""; width: 5px; height: 5px; border-radius: 999px; background: color-mix(in oklab, var(--fg) 28%, transparent); transition: height 0.25s var(--ease), background 0.25s var(--ease); }
+    .rail button[aria-current="true"]::after { height: 14px; background: var(--accent); }
+    .hint { position: fixed; bottom: max(1.25rem, env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center; z-index: 20; font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); pointer-events: none; transition: opacity 0.4s var(--ease); }
+    .hint span { display: inline-block; animation: bob 2.2s var(--ease) infinite; }
+    @keyframes bob { 0%, 100% { transform: translateY(0); opacity: 0.55; } 50% { transform: translateY(4px); opacity: 1; } }
+    .cta-link { position: absolute; left: 1.25rem; right: 1.25rem; bottom: 1.35rem; z-index: 5; pointer-events: auto; display: flex; align-items: center; justify-content: center; height: 2.75rem; border-radius: 10px; background: var(--accent); color: #0c0b0a; font-size: 0.85rem; font-weight: 600; text-decoration: none; transform: translateZ(40px); opacity: 0; transition: opacity 0.3s var(--ease); }
+    .card.is-cta-active .cta-link { opacity: 1; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .hint span { animation: none; } }
+  </style>
+</head>
+<body>
+  <header class="brand-top" id="brandTop">
+    <div class="kicker">Energia · Symbole · Wgląd</div>
+    <div class="name">Stół Pustelnika</div>
+  </header>
+  <nav class="rail" id="rail" aria-label="Karty talii"></nav>
+  <div class="hint" id="hint"><span>Przewiń talię ↓</span></div>
+  <div class="stage" aria-hidden="true"><div class="deck" id="deck"></div></div>
+  <div id="markers"></div>
+  <script>
+    const CARDS = [
+      { id: "hermit", roman: "IX", title: "Pustelnik", body: "Latarnia oświetla tylko następny krok. Nazwa Stołu — samotność, która staje się przewodnictwem.", art: "cards/hermit.jpg" },
+      { id: "priestess", roman: "II", title: "Kapłanka", body: "Intuicja i milczące symbole. To, co ważne, często nie krzyczy — czeka, aż się zatrzymasz.", art: "cards/priestess.jpg" },
+      { id: "star", roman: "XVII", title: "Gwiazda", body: "Jasność po ciemności. Nadzieja bez presji — spokojne światło, nie spektakl.", art: "cards/star.jpg" },
+      { id: "silence", roman: "◎", title: "Cisza", body: "Posłuchaj tego, co subtelne. Krótki rytuał Stołu — uwaga zamiast hałasu.", art: "cards/silence.jpg" },
+      { id: "will", roman: "◇", title: "Wolna wola", body: "Symbole pokazują możliwości. Ty wybierasz drogę — sprawczość zawsze po Twojej stronie.", art: "cards/will.jpg" },
+      { id: "table", roman: "✦", title: "Stół", body: "Przestrzeń prawdy, intuicji i świadomego wyboru. Tu spotykasz karty — i siebie.", art: "cards/table.jpg", cta: true },
+    ];
+    const N = CARDS.length;
+    document.documentElement.style.setProperty("--n", String(N));
+    const deck = document.getElementById("deck");
+    const rail = document.getElementById("rail");
+    const hint = document.getElementById("hint");
+    const brandTop = document.getElementById("brandTop");
+    const markers = document.getElementById("markers");
+    markers.innerHTML = CARDS.map(() => '<div class="scroll-marker"></div>').join("");
+    const T = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    CARDS.forEach((c, i) => {
+      const el = document.createElement("article");
+      el.className = "card" + (c.cta ? " has-cta" : "");
+      el.dataset.index = String(i);
+      el.innerHTML = `<div class="card-shell"><div class="layer layer-art"><img src="${T}" alt="" /></div><div class="layer layer-vignette"></div><div class="layer layer-frame"></div><div class="layer layer-copy"><div class="roman">${c.roman}</div><h2>${c.title}</h2><p>${c.body}</p></div><div class="layer layer-glint"></div>${c.cta ? '<a class="cta-link" href="mailto:kontakt@stolpustelnika.pl">Otwórz przestrzeń na wgląd</a>' : ""}</div>`;
+      deck.appendChild(el);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.setAttribute("aria-label", `Karta ${i + 1}: ${c.title}`);
+      btn.addEventListener("click", () => window.scrollTo({ top: i * window.innerHeight, behavior: "smooth" }));
+      rail.appendChild(btn);
+    });
+    const cardEls = [...deck.querySelectorAll(".card")];
+    const railBtns = [...rail.querySelectorAll("button")];
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function render() {
+      const vh = window.innerHeight;
+      const maxScroll = (N - 1) * vh;
+      const t = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+      const progress = t * (N - 1);
+      const active = Math.round(progress);
+      cardEls.forEach((el, i) => {
+        const delta = i - progress;
+        const abs = Math.abs(delta);
+        let tz, ty, rx, scale, opacity, blur;
+        if (delta <= 0) {
+          const p = clamp(-delta, 0, 2);
+          tz = -p * 90; ty = -p * 28; rx = -p * 8; scale = 1 - p * 0.06; opacity = 1 - p * 0.55; blur = p * 1.2;
+        } else {
+          const p = clamp(delta, 0, 3);
+          tz = -p * 55; ty = p * 14; rx = p * 4; scale = 1 - p * 0.045; opacity = 1 - p * 0.22; blur = p * 0.4;
+        }
+        const fan = delta * 6;
+        el.style.opacity = String(clamp(opacity, 0, 1));
+        el.style.filter = blur > 0.05 ? `blur(${blur}px)` : "none";
+        el.style.zIndex = String(Math.round(100 - abs * 10));
+        el.style.transform = reduced
+          ? `translateY(${delta === 0 ? 0 : delta * 8}px) scale(${delta === 0 ? 1 : 0.96})`
+          : `translate3d(${fan}px, ${ty}px, ${tz}px) rotateX(${rx}deg) rotateZ(${fan * 0.15}deg) scale(${scale})`;
+        el.classList.toggle("is-cta-active", i === active && !!CARDS[i].cta);
+      });
+      railBtns.forEach((b, i) => b.setAttribute("aria-current", i === active ? "true" : "false"));
+      hint.style.opacity = progress < 0.15 ? "1" : "0";
+      brandTop.style.opacity = progress > 0.3 ? "0.55" : "1";
+    }
+    let ticking = false;
+    window.addEventListener("scroll", () => {
+      if (!ticking) { requestAnimationFrame(() => { render(); ticking = false; }); ticking = true; }
+    }, { passive: true });
+    window.addEventListener("resize", render);
+    render();
+  </script>
+</body>
+</html>
